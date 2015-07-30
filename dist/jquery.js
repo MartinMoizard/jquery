@@ -9,7 +9,7 @@
  * Released under the MIT license
  * http://jquery.org/license
  *
- * Date: 2015-04-28T16:01Z
+ * Date: 2015-07-30T13:00Z
  */
 
 (function( global, factory ) {
@@ -8930,7 +8930,7 @@ jQuery.offset = {
 			elem.style.position = "relative";
 		}
 
-		curOffset = curElem.offset();
+		curOffset = curElem.offset() || { top: 0, left: 0 };
 		curCSSTop = jQuery.css( elem, "top" );
 		curCSSLeft = jQuery.css( elem, "left" );
 		calculatePosition = ( position === "absolute" || position === "fixed" ) &&
@@ -8978,32 +8978,26 @@ jQuery.fn.extend({
 				});
 		}
 
-		var docElem, win,
+		var docElem, win, rect,
 			elem = this[ 0 ],
-			box = { top: 0, left: 0 },
 			doc = elem && elem.ownerDocument;
 
 		if ( !doc ) {
 			return;
 		}
 
-		docElem = doc.documentElement;
+		rect = elem.getBoundingClientRect();
 
-		// Make sure it's not a disconnected DOM node
-		if ( !jQuery.contains( docElem, elem ) ) {
-			return box;
-		}
+		// Make sure element is not hidden (display: none) or disconnected
+		if ( rect.width || rect.height || elem.getClientRects().length ) {
+			win = getWindow( doc );
+			docElem = doc.documentElement;
 
-		// Support: BlackBerry 5, iOS 3 (original iPhone)
-		// If we don't have gBCR, just use 0,0 rather than error
-		if ( typeof elem.getBoundingClientRect !== strundefined ) {
-			box = elem.getBoundingClientRect();
+			return {
+				top: rect.top + win.pageYOffset - docElem.clientTop,
+				left: rect.left + win.pageXOffset - docElem.clientLeft
+			};
 		}
-		win = getWindow( doc );
-		return {
-			top: box.top + win.pageYOffset - docElem.clientTop,
-			left: box.left + win.pageXOffset - docElem.clientLeft
-		};
 	},
 
 	position: function() {
