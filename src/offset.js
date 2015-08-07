@@ -73,34 +73,45 @@ jQuery.offset = {
 
 jQuery.fn.extend({
 	offset: function( options ) {
-		if ( arguments.length ) {
-			return options === undefined ?
-				this :
-				this.each(function( i ) {
-					jQuery.offset.setOffset( this, options, i );
-				});
-		}
+		// Preserve chaining for setter
+			if ( arguments.length ) {
+				return options === undefined ?
+					this :
+					this.each(function( i ) {
+						jQuery.offset.setOffset( this, options, i );
+					});
+			}
 
-		var docElem, win, rect,
-			elem = this[ 0 ],
-			doc = elem && elem.ownerDocument;
+			var docElem, win, rect, doc,
+				elem = this[ 0 ];
 
-		if ( !doc ) {
-			return;
-		}
+			if ( !elem ) {
+				return;
+			}
 
-		rect = elem.getBoundingClientRect();
+			// Support: IE<=11+
+			// Running getBoundingClientRect on a
+			// disconnected node in IE throws an error
+			if ( !elem.getClientRects().length ) {
+				return { top: 0, left: 0 };
+			}
 
-		// Make sure element is not hidden (display: none) or disconnected
-		if ( rect.width || rect.height || elem.getClientRects().length ) {
-			win = getWindow( doc );
-			docElem = doc.documentElement;
+			rect = elem.getBoundingClientRect();
 
-			return {
-				top: rect.top + win.pageYOffset - docElem.clientTop,
-				left: rect.left + win.pageXOffset - docElem.clientLeft
-			};
-		}
+			// Make sure element is not hidden (display: none)
+			if ( rect.width || rect.height ) {
+				doc = elem.ownerDocument;
+				win = getWindow( doc );
+				docElem = doc.documentElement;
+
+				return {
+					top: rect.top + win.pageYOffset - docElem.clientTop,
+					left: rect.left + win.pageXOffset - docElem.clientLeft
+				};
+			}
+
+			// Return zeros for disconnected and hidden elements (gh-2310)
+			return rect;
 	},
 
 	position: function() {
